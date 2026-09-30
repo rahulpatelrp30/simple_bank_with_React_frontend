@@ -1,0 +1,7 @@
+@'
+fastapi
+uvicorn[standard]
+pymongo
+'@ | Set-Content -Encoding ascii requirements.txt
+
+https://github.com/rahulpatelrp30/restapi_withDB
