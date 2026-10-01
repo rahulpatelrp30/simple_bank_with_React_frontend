@@ -1,56 +1,150 @@
+import { ArrowDownLeft, ArrowUpRight, Inbox, ReceiptText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
-import { formatMoney, getAccount } from "../api";
+import { getAccount, getTransactions } from "../api";
+import { homePath, useAuth } from "../AuthContext";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { maskedNumber, money } from "../components/money";
+import usePageTitle from "../components/usePageTitle";
 
 export default function AccountDetails() {
+  usePageTitle("Account Details");
+  const { user } = useAuth();
   const { id } = useParams();
   const location = useLocation();
   const message = location.state?.message;
   const [account, setAccount] = useState(null);
+  const [transactions, setTransactions] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getAccount(id).then(setAccount).catch((err) => setError(err.message));
+    Promise.all([getAccount(id), getTransactions(id)])
+      .then(([acc, txns]) => {
+        setAccount(acc);
+        setTransactions([...txns].reverse());
+      })
+      .catch((err) => setError(err.message));
   }, [id]);
+
+  const crumbs = [{ label: "Dashboard", to: homePath(user) }, { label: `Account ${maskedNumber(id)}` }];
 
   if (error) {
     return (
-      <div className="card">
+      <div className="page">
+        <Breadcrumbs items={crumbs} />
         <div className="alert alert-error">{error}</div>
-        <Link to="/" className="back-link">Back to home</Link>
       </div>
     );
   }
 
-  if (!account) return <div className="card">Loading...</div>;
+  if (!account) return <div className="page"><div className="loader" /></div>;
+
+  const isCurrent = account.accountType === "CURRENT";
 
   return (
-    <div className="card">
-      <h1>Account Details</h1>
+    <div className="page-wide">
+      <Breadcrumbs items={crumbs} />
       {message && <div className="alert alert-success">{message}</div>}
 
-      <dl className="details">
-        <dt>Account ID</dt>
-        <dd>{account.accountId}</dd>
-        <dt>User Name</dt>
-        <dd>{account.userName}</dd>
-        <dt>Account Type</dt>
-        <dd>{account.accountType}</dd>
-      </dl>
+      <div className="details-grid">
+        {/* Balance card and actions */}
+        <section className="panel">
+          <div className={`bank-card bank-card-lg ${isCurrent ? "bank-card-alt" : ""}`}>
+            <div className="bank-card-top">
+              <span className="bank-card-type">{account.accountType} ACCOUNT</span>
+              <span className="bank-card-chip" />
+            </div>
+            <span className="bank-card-number">{maskedNumber(account.accountId)}</span>
+            <div className="bank-card-bottom">
+              <span>
+                <small>Available balance</small>
+                <strong>{money(account.balance)}</strong>
+              </span>
+              <small>{account.userName}</small>
+            </div>
+          </div>
 
-      <div className="balance">
-        <span className="muted">Balance</span>
-        <strong>{formatMoney(account.balance)}</strong>
+          <div className="action-grid">
+            <Link to={`/accounts/${id}/deposit`} className="action">
+              <span className="action-icon icon-in"><ArrowDownLeft size={20} /></span>
+              Deposit
+            </Link>
+            <Link to={`/accounts/${id}/withdraw`} className="action">
+              <span className="action-icon icon-out"><ArrowUpRight size={20} /></span>
+              Withdraw
+            </Link>
+            <Link to={`/accounts/${id}/transactions`} className="action">
+              <span className="action-icon"><ReceiptText size={20} /></span>
+              View Transactions
+            </Link>
+          </div>
+        </section>
+
+        {/* Account information */}
+        <section className="panel">
+          <div className="panel-head">
+            <h2>Account Information</h2>
+          </div>
+          <dl className="info-list">
+            <div>
+              <dt>Account ID</dt>
+              <dd>{account.accountId}</dd>
+            </div>
+            <div>
+              <dt>Account holder</dt>
+              <dd>{account.userName}</dd>
+            </div>
+            <div>
+              <dt>Account type</dt>
+              <dd><span className={`badge ${isCurrent ? "badge-purple" : "badge-blue"}`}>{account.accountType}</span></dd>
+            </div>
+            <div>
+              <dt>Balance</dt>
+              <dd>{money(account.balance)}</dd>
+            </div>
+            <div>
+              <dt>Transactions</dt>
+              <dd>{transactions.length}</dd>
+            </div>
+          </dl>
+        </section>
       </div>
 
-      <div className="actions">
-        <Link to={`/accounts/${id}/deposit`} className="btn btn-primary">Deposit</Link>
-        <Link to={`/accounts/${id}/withdraw`} className="btn btn-primary">Withdraw</Link>
-        <Link to={`/accounts/${id}/transactions`} className="btn">View Transactions</Link>
-      </div>
+      {/* Recent transactions */}
+      <section className="panel">
+        <div className="panel-head">
+          <h2>Recent Transactions</h2>
+          {transactions.length > 0 && <Link to={`/accounts/${id}/transactions`} className="link">View all</Link>}
+        </div>
 
-      <Link to="/" className="back-link">Back to home</Link>
+        {transactions.length === 0 ? (
+          <div className="empty">
+            <Inbox size={32} />
+            <p>No transactions yet. Make your first deposit.</p>
+          </div>
+        ) : (
+          <ul className="activity">
+            {transactions.slice(0, 5).map((t) => {
+              const isIn = t.type === "DEPOSIT";
+              return (
+                <li key={t.txnId}>
+                  <span className={`activity-icon ${isIn ? "icon-in" : "icon-out"}`}>
+                    {isIn ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+                  </span>
+                  <span className="activity-info">
+                    <strong>{isIn ? "Deposit" : "Withdrawal"}</strong>
+                    <small>Transaction #{t.txnId} &middot; {t.date}</small>
+                  </span>
+                  <span className={`activity-amount ${isIn ? "text-in" : "text-out"}`}>
+                    {isIn ? "+" : "-"}{money(t.amount)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

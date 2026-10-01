@@ -1,12 +1,22 @@
-﻿from fastapi import FastAPI, Request
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from controllers import router
+from controllers import auth_service, router
 from services import BusinessRuleError, ForbiddenError, NotFoundError, UnauthorizedError
 
-app = FastAPI(title="Simple Bank API")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    auth_service.ensure_admin()  # creates the "admin" user on first start
+    yield
+
+
+app = FastAPI(title="Simple Bank API", lifespan=lifespan)
+
+# Allows the React frontend (running on another port) to call this API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:5173"],

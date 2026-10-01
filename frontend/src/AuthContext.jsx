@@ -4,12 +4,12 @@ import { clearToken, getMe, getToken, loginRequest, logoutRequest, saveToken, si
 
 const AuthContext = createContext(null);
 
-// Keeps track of who is logged in, and shares it with every page
+// Keeps track of who is logged in (and their role), and shares it with every page
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(() => Boolean(getToken()));
 
-  // On page load: if we have a saved token, ask the API who it belongs to
+  // On page load: if we have a saved JWT, ask the API who it belongs to
   useEffect(() => {
     if (!getToken()) return;
     getMe()
@@ -18,16 +18,18 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  async function login(email, password) {
-    const result = await loginRequest(email, password);
+  async function login(username, password) {
+    const result = await loginRequest(username, password);
     saveToken(result.token);
     setUser(result.user);
+    return result.user;
   }
 
-  async function signup(name, email, password) {
-    const result = await signupRequest(name, email, password);
+  async function signup(form) {
+    const result = await signupRequest(form);
     saveToken(result.token);
     setUser(result.user);
+    return result.user;
   }
 
   async function logout() {
@@ -50,3 +52,6 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+
+// Where each kind of user lands after logging in
+export const homePath = (user) => (user?.role === "ADMIN" ? "/admin" : "/dashboard");

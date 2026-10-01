@@ -1,15 +1,24 @@
+import { Briefcase, PiggyBank } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { createAccount } from "../api";
-import { useAuth } from "../AuthContext";
+import { homePath, useAuth } from "../AuthContext";
+import Breadcrumbs from "../components/Breadcrumbs";
+import usePageTitle from "../components/usePageTitle";
+
+const ACCOUNT_TYPES = [
+  { value: "SAVINGS", title: "Savings Account", text: "Grow your money and save toward your goals.", icon: PiggyBank },
+  { value: "CURRENT", title: "Current Account", text: "For everyday spending and frequent transactions.", icon: Briefcase },
+];
 
 export default function CreateAccount() {
+  usePageTitle("Open Account");
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [accountType, setAccountType] = useState("SAVINGS");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -18,7 +27,7 @@ export default function CreateAccount() {
     try {
       const account = await createAccount(accountType);
       navigate(`/accounts/${account.accountId}`, {
-        state: { message: `Account ${account.accountId} created successfully!` },
+        state: { message: `Your new ${accountType.toLowerCase()} account is ready.` },
       });
     } catch (err) {
       setError(err.message);
@@ -27,25 +36,36 @@ export default function CreateAccount() {
   }
 
   return (
-    <div className="card">
-      <h1>Create Account</h1>
-      <p className="muted">Account holder: {user.name} ({user.email})</p>
-      {error && <div className="alert alert-error">{error}</div>}
+    <div className="page">
+      <Breadcrumbs items={[{ label: "Dashboard", to: homePath(user) }, { label: "Open Account" }]} />
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Account Type
-          <select value={accountType} onChange={(e) => setAccountType(e.target.value)}>
-            <option value="SAVINGS">Savings</option>
-            <option value="CURRENT">Current</option>
-          </select>
-        </label>
-        <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-          {loading ? "Creating..." : "Submit"}
-        </button>
-      </form>
+      <div className="card">
+        <h1>Open a new account</h1>
+        <p className="muted">Account holder: <strong>{user.firstName} {user.lastName}</strong> ({user.email})</p>
+        {error && <div className="alert alert-error">{error}</div>}
 
-      <Link to="/" className="back-link">Back to my accounts</Link>
+        <form onSubmit={handleSubmit}>
+          <span className="field-label">Account type</span>
+          <div className="type-options">
+            {ACCOUNT_TYPES.map((t) => {
+              const Icon = t.icon;
+              return (
+                <label key={t.value} className={`type-option ${accountType === t.value ? "selected" : ""}`}>
+                  <input type="radio" name="accountType" value={t.value} className="sr-only"
+                    checked={accountType === t.value} onChange={() => setAccountType(t.value)} />
+                  <span className="type-icon"><Icon size={22} /></span>
+                  <strong>{t.title}</strong>
+                  <small>{t.text}</small>
+                </label>
+              );
+            })}
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={loading}>
+            {loading ? "Opening account..." : "Open account"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

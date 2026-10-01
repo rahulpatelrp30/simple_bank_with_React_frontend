@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: 54f9e8f2-b34f-4ac9-8e50-ea9a2c2560a8
+
+localResources:
+  collections:
+    - ../Simple_Bank_API_JWT.postman_collection.json

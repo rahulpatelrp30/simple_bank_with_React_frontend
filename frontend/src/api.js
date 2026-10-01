@@ -1,7 +1,8 @@
+// Data service: every call to the backend REST API lives in this file.
 const BASE_URL = "http://127.0.0.1:8000/api";
 const TOKEN_KEY = "bank_token";
 
-// ---------- Login token (kept in the browser so you stay logged in) ----------
+// ---------- JWT token (kept in the browser so you stay logged in) ----------
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const saveToken = (token) => localStorage.setItem(TOKEN_KEY, token);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
@@ -18,7 +19,7 @@ async function request(path, options = {}) {
     throw new Error("Cannot reach the API. Is the backend running?");
   }
 
-  // Logged out or session expired: send the user back to the login page
+  // Token missing or expired: send the user back to the login page
   if (response.status === 401 && !path.startsWith("/auth/")) {
     clearToken();
     window.location.href = "/login";
@@ -35,32 +36,37 @@ async function request(path, options = {}) {
   return data;
 }
 
+const post = (path, body) => request(path, { method: "POST", body: JSON.stringify(body) });
+
 // ---------- Auth ----------
-export const signupRequest = (name, email, password) =>
-  request("/auth/signup", { method: "POST", body: JSON.stringify({ name, email, password }) });
-
-export const loginRequest = (email, password) =>
-  request("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
-
+export const signupRequest = (form) => post("/auth/signup", form);
+export const loginRequest = (username, password) => post("/auth/login", { username, password });
 export const getMe = () => request("/auth/me");
-
 export const logoutRequest = () => request("/auth/logout", { method: "POST" });
 
-// ---------- Accounts ----------
+// ---------- Customer ----------
+export const getCustomerDashboard = (customerId) => request(`/customerDashboard/${customerId}`);
 export const getMyAccounts = () => request("/accounts");
-
-export const createAccount = (accountType) =>
-  request("/accounts", { method: "POST", body: JSON.stringify({ accountType }) });
-
+export const createAccount = (accountType) => post("/accounts", { accountType });
 export const getAccount = (id) => request(`/accounts/${id}`);
-
-export const deposit = (id, amount) =>
-  request(`/accounts/${id}/deposit`, { method: "POST", body: JSON.stringify({ amount }) });
-
-export const withdraw = (id, amount) =>
-  request(`/accounts/${id}/withdraw`, { method: "POST", body: JSON.stringify({ amount }) });
-
+export const deposit = (id, amount) => post(`/accounts/${id}/deposit`, { amount });
+export const withdraw = (id, amount) => post(`/accounts/${id}/withdraw`, { amount });
 export const getTransactions = (id) => request(`/accounts/${id}/transactions`);
+
+// ---------- Admin (needs an AdminToken) ----------
+export const getAdminDashboard = () => request("/admin");
+
+export const getAllCustomers = ({ firstName = "", premium = null } = {}) => {
+  const params = new URLSearchParams();
+  if (firstName) params.set("firstName", firstName);
+  if (premium !== null) params.set("premium", premium);
+  const query = params.toString();
+  return request(`/admin/customers${query ? `?${query}` : ""}`);
+};
+
+export const getCustomerById = (id) => request(`/admin/customers/${id}`);
+export const postCustomer = (form) => post("/admin/customers", form);
+export const deleteCustomer = (id) => request(`/admin/customers/${id}`, { method: "DELETE" });
 
 export const formatMoney = (value) =>
   Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });

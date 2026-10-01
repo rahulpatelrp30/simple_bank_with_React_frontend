@@ -1,15 +1,25 @@
-﻿from dataclasses import dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
+
+ROLE_ADMIN = "ADMIN"
+ROLE_CUSTOMER = "CUSTOMER"
 
 
 @dataclass
 class User:
     user_id: int
-    name: str
+    first_name: str
+    last_name: str
+    username: str
     email: str
     password_hash: str = ""
+    role: str = ROLE_CUSTOMER
     created_at: datetime = field(default_factory=datetime.now)
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip()
 
 
 @dataclass
@@ -27,11 +37,4 @@ class Transaction:
     account_id: int
     txn_type: str  # "DEPOSIT" or "WITHDRAW"
     amount: Decimal
-    created_at: datetime = field(default_factory=datetime.now)
-
-
-@dataclass
-class Session:
-    token: str
-    user_id: int
     created_at: datetime = field(default_factory=datetime.now)
