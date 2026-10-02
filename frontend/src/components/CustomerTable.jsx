@@ -13,7 +13,6 @@ export default function CustomerTable({ customers, onDelete, deletingId }) {
           <tr>
             <th>ID</th>
             <th>Customer</th>
-            <th>Username</th>
             <th>Accounts</th>
             <th className="right">Total Balance</th>
             <th>Joined</th>
@@ -34,7 +33,6 @@ export default function CustomerTable({ customers, onDelete, deletingId }) {
                   </span>
                 </div>
               </td>
-              <td>{c.username}</td>
               <td>{c.accountCount}</td>
               <td className="right amount">{money(c.totalBalance)}</td>
               <td>{c.joined}</td>

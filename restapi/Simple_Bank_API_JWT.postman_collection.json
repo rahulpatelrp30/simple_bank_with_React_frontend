@@ -217,7 +217,7 @@
                 "exec": [
                   "(function () {",
                   "    pm.test(\"Status is 401 Unauthorized\", () => pm.response.to.have.status(401));",
-                  "    pm.test(\"Message: Invalid username or password\", () => pm.expect(pm.response.json().detail).to.eql(\"Invalid username or password\"));",
+                  "    pm.test(\"Message: Invalid email or password\", () => pm.expect(pm.response.json().detail).to.eql(\"Invalid email or password\"));",
                   "})();"
                 ]
               }

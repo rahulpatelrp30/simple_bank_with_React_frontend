@@ -1,4 +1,4 @@
-import { CirclePlus, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { CircleHelp, CirclePlus, Landmark, LayoutDashboard, Lock, LogOut, MapPin, ShieldCheck } from "lucide-react";
 import { BrowserRouter, Link, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 
 import { AuthProvider, homePath, useAuth } from "./AuthContext";
@@ -14,62 +14,92 @@ import Signup from "./pages/Signup";
 import Transactions from "./pages/Transactions";
 import Welcome from "./pages/Welcome";
 
+// Thin dark bar at the very top, like most bank websites
+function UtilityBar() {
+  return (
+    <div className="utility-bar">
+      <div className="utility-inner">
+        <nav className="utility-left" aria-label="Segments">
+          <span className="active">Personal</span>
+          <span>Small Business</span>
+          <span>Commercial</span>
+        </nav>
+        <div className="utility-right">
+          <span><MapPin size={14} /> ATM &amp; Branch</span>
+          <span><CircleHelp size={14} /> Help &amp; Support</span>
+          <span className="secure"><Lock size={13} /> Secure site</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const isAdmin = user?.role === "ADMIN";
 
   async function handleLogout() {
+    navigate("/", { replace: true }); // go to the homepage first, then sign off
     await logout();
-    navigate("/login");
   }
 
   return (
-    <header className="header">
-      <div className="header-inner">
-        <Link to="/" className="logo">
-          <span className="logo-mark">S</span>
-          Simple Bank
+    <header className="site-header">
+      <UtilityBar />
+      <div className="site-header-inner">
+        <Link to={user ? homePath(user) : "/"} className="brand">
+          <span className="brand-mark"><Landmark size={20} /></span>
+          <span className="brand-text">Simple<strong>Bank</strong></span>
         </Link>
 
         {user ? (
-          <>
-            <nav className="nav-main">
-              {isAdmin ? (
-                <NavLink to="/admin" className="nav-item">
-                  <ShieldCheck size={18} /> Admin Dashboard
+          <nav className="main-nav">
+            {isAdmin ? (
+              <NavLink to="/admin" className="main-nav-item">
+                <ShieldCheck size={17} /> Admin Dashboard
+              </NavLink>
+            ) : (
+              <>
+                <NavLink to="/dashboard" className="main-nav-item">
+                  <LayoutDashboard size={17} /> Accounts
                 </NavLink>
-              ) : (
-                <>
-                  <NavLink to="/dashboard" className="nav-item">
-                    <LayoutDashboard size={18} /> Dashboard
-                  </NavLink>
-                  <NavLink to="/create" className="nav-item">
-                    <CirclePlus size={18} /> Open Account
-                  </NavLink>
-                </>
-              )}
-            </nav>
+                <NavLink to="/create" className="main-nav-item">
+                  <CirclePlus size={17} /> Open an Account
+                </NavLink>
+              </>
+            )}
+          </nav>
+        ) : (
+          <nav className="main-nav">
+            <a href="/#products" className="main-nav-item">Banking</a>
+            <a href="/#rates" className="main-nav-item">Rates</a>
+            <a href="/#how" className="main-nav-item">How It Works</a>
+            <a href="/#security" className="main-nav-item">Security</a>
+          </nav>
+        )}
 
-            <div className="nav-user">
+        <div className="header-actions">
+          {user ? (
+            <>
               <span className={`avatar ${isAdmin ? "avatar-admin" : ""}`}>
                 {(user.firstName[0] + (user.lastName[0] || "")).toUpperCase()}
               </span>
-              <span className="nav-user-text">
+              <span className="header-user">
                 <strong>{user.firstName} {user.lastName}</strong>
-                <small>{isAdmin ? "Administrator" : `@${user.username}`}</small>
+                <small>{isAdmin ? "Administrator" : user.email}</small>
               </span>
-              <button type="button" className="icon-button" onClick={handleLogout} title="Log out">
-                <LogOut size={18} />
+              <button type="button" className="btn btn-outline btn-sm" onClick={handleLogout}>
+                <LogOut size={15} /> Sign Off
               </button>
-            </div>
-          </>
-        ) : (
-          <nav className="nav-auth">
-            <Link to="/login" className="nav-item">Log in</Link>
-            <Link to="/signup" className="btn btn-primary btn-sm">Get started</Link>
-          </nav>
-        )}
+            </>
+          ) : (
+            <>
+              <Link to="/signup" className="btn btn-outline btn-sm hide-sm">Open an Account</Link>
+              <Link to="/login" className="btn btn-primary btn-sm"><Lock size={15} /> Sign On</Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -77,10 +107,43 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-inner">
-        <span>&copy; {new Date().getFullYear()} Simple Bank. All rights reserved.</span>
-        <span>Built with React, FastAPI and MongoDB</span>
+    <footer className="site-footer">
+      <div className="footer-top">
+        <div className="footer-brand">
+          <span className="brand brand-light">
+            <span className="brand-mark"><Landmark size={20} /></span>
+            <span className="brand-text">Simple<strong>Bank</strong></span>
+          </span>
+          <p>Everyday banking made simple: open accounts, move money and track every transaction from one secure place.</p>
+        </div>
+        <div className="footer-col">
+          <h4>Banking</h4>
+          <span>Simple Savings</span>
+          <span>Simple Current</span>
+          <span>Credit Cards</span>
+          <span>Home Loans</span>
+        </div>
+        <div className="footer-col">
+          <h4>Help &amp; Support</h4>
+          <span>Contact Us</span>
+          <span>ATM &amp; Branch Locator</span>
+          <span>FAQs</span>
+          <span>Report Fraud</span>
+        </div>
+        <div className="footer-col">
+          <h4>About</h4>
+          <span>About Simple Bank</span>
+          <span>Security Center</span>
+          <span>Privacy</span>
+          <span>Terms of Use</span>
+        </div>
+      </div>
+      <div className="footer-legal">
+        <p>
+          Simple Bank is a training project built with React, FastAPI and MongoDB. It is not a real bank:
+          no real money is held, deposits are not insured, and rates shown are for illustration only.
+        </p>
+        <p>&copy; {new Date().getFullYear()} Simple Bank. All rights reserved.</p>
       </div>
     </footer>
   );

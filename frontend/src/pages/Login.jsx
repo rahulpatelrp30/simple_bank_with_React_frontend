@@ -1,4 +1,4 @@
-import { Lock, User } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
@@ -8,7 +8,7 @@ import { Field, PasswordInput } from "../components/Field";
 import usePageTitle from "../components/usePageTitle";
 
 export default function Login() {
-  usePageTitle("Log in");
+  usePageTitle("Sign On");
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -32,12 +32,12 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Log in with your username and password.">
+    <AuthLayout title="Welcome back" subtitle="Sign on with your email and password.">
       {error && <div className="alert alert-error">{error}</div>}
 
       <form onSubmit={handleSubmit}>
-        <Field label="Username" icon={User} hint="You can also use your email address">
-          <input type="text" required autoComplete="username" placeholder="your username"
+        <Field label="Email" icon={Mail}>
+          <input type="email" required autoComplete="email" placeholder="you@example.com"
             value={username} onChange={(e) => setUsername(e.target.value)} />
         </Field>
         <Field label="Password" icon={Lock}>
@@ -45,7 +45,7 @@ export default function Login() {
             value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>
         <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={loading}>
-          {loading ? "Logging in..." : "Log in"}
+          {loading ? "Signing on..." : "Sign On"}
         </button>
       </form>
 

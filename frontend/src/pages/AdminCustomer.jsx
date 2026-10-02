@@ -1,4 +1,4 @@
-import { AtSign, CalendarDays, Crown, Inbox, Mail, Trash2 } from "lucide-react";
+import { CalendarDays, Crown, Inbox, Mail, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -56,7 +56,6 @@ export default function AdminCustomer() {
             {customer.premium && <span className="badge badge-gold"><Crown size={12} /> Premium</span>}
           </h1>
           <div className="profile-meta">
-            <span><AtSign size={15} /> {customer.username}</span>
             <span><Mail size={15} /> {customer.email}</span>
             <span><CalendarDays size={15} /> Joined {customer.joined}</span>
           </div>

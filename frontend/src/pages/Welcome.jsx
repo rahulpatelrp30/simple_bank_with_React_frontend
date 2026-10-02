@@ -1,78 +1,245 @@
-import { ArrowRight, ChartColumn, ShieldCheck, Users, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
+import {
+  ArrowRight, Briefcase, CircleCheck, Clock, CreditCard, House, KeyRound, Lock, Mail,
+  PiggyBank, ShieldCheck, UserPlus, Wallet,
+} from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { homePath, useAuth } from "../AuthContext";
+import { Field, PasswordInput } from "../components/Field";
 import usePageTitle from "../components/usePageTitle";
 
-const FEATURES = [
-  { icon: ShieldCheck, title: "Secure by design", text: "JWT login with separate admin and customer access, and BCrypt-hashed passwords." },
-  { icon: Zap, title: "Instant transactions", text: "Deposits and withdrawals update your balance immediately." },
-  { icon: ChartColumn, title: "Complete history", text: "Every transaction is recorded and easy to filter and review." },
-  { icon: Users, title: "Admin tools", text: "Admins can search, filter, add and remove customers from one dashboard." },
+const RATES = [
+  { value: "4.00%", unit: "APY*", label: "Simple Savings" },
+  { value: "$0", unit: "", label: "Monthly maintenance fee*" },
+  { value: "24/7", unit: "", label: "Online account access" },
+  { value: "Instant", unit: "", label: "Deposits and withdrawals" },
 ];
 
-// Public welcome page, shown before logging in
+const PRODUCTS = [
+  {
+    icon: PiggyBank, title: "Simple Savings", tag: "Popular",
+    text: "Grow your money with a savings account built for your goals.",
+    points: ["Earn interest on every dollar", "No minimum opening deposit", "Track every deposit"],
+    available: true,
+  },
+  {
+    icon: Briefcase, title: "Simple Current", tag: "",
+    text: "An everyday account for spending, bills and frequent transactions.",
+    points: ["Unlimited deposits and withdrawals", "No monthly maintenance fee", "Real-time balance"],
+    available: true,
+  },
+  {
+    icon: CreditCard, title: "Credit Cards", tag: "Coming soon",
+    text: "Rewards and cash back on the purchases you already make.",
+    points: ["Cash back on every purchase", "No annual fee options", "Fraud monitoring"],
+    available: false,
+  },
+  {
+    icon: House, title: "Home Loans", tag: "Coming soon",
+    text: "Competitive mortgage options to help you buy or refinance.",
+    points: ["Fixed and adjustable rates", "Online pre-qualification", "Dedicated loan officers"],
+    available: false,
+  },
+];
+
+const STEPS = [
+  { icon: UserPlus, title: "Enroll online", text: "Create your username and password in about a minute." },
+  { icon: Wallet, title: "Open an account", text: "Choose Simple Savings or Simple Current. No paperwork needed." },
+  { icon: Clock, title: "Bank any time", text: "Deposit, withdraw and review your activity 24/7." },
+];
+
+// The sign-on box on the homepage, like on most bank websites
+function SignOnCard() {
+  const { user, login, logout } = useAuth();
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  if (user) {
+    return (
+      <div className="signon-card">
+        <h2>Welcome back, {user.firstName}</h2>
+        <p className="muted">You're signed on securely.</p>
+        <Link to={homePath(user)} className="btn btn-primary btn-block btn-lg">
+          Go to my accounts <ArrowRight size={18} />
+        </Link>
+        <button type="button" className="btn btn-block signon-secondary" onClick={logout}>Sign Off</button>
+      </div>
+    );
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const loggedIn = await login(username, password);
+      navigate(homePath(loggedIn));
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form className="signon-card" onSubmit={handleSubmit}>
+      <h2><Lock size={18} /> Sign On</h2>
+      {error && <div className="alert alert-error">{error}</div>}
+      <Field label="Email" icon={Mail}>
+        <input type="email" required autoComplete="email" placeholder="you@example.com"
+          value={username} onChange={(e) => setUsername(e.target.value)} />
+      </Field>
+      <Field label="Password" icon={KeyRound}>
+        <PasswordInput required autoComplete="current-password" placeholder="Password"
+          value={password} onChange={(e) => setPassword(e.target.value)} />
+      </Field>
+      <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={loading}>
+        {loading ? "Signing on..." : "Sign On"}
+      </button>
+      <div className="signon-links">
+        <span>Forgot your password?</span>
+        <Link to="/signup">Enroll now</Link>
+      </div>
+    </form>
+  );
+}
+
+// Public homepage
 export default function Welcome() {
-  usePageTitle("Welcome");
+  usePageTitle("Personal Banking");
   const { user } = useAuth();
 
   return (
-    <div className="welcome">
-      <section className="hero">
-        <div className="hero-text">
-          <span className="eyebrow-pill">Full-stack banking demo</span>
-          <h1>Banking made simple, secure and fast.</h1>
-          <p>
-            Open savings and current accounts, move money in seconds, and keep track of every
-            transaction from one clean dashboard.
-          </p>
-          <div className="hero-actions">
-            {user ? (
-              <Link to={homePath(user)} className="btn btn-primary btn-lg">
-                Go to my dashboard <ArrowRight size={18} />
+    <div className="home">
+      {/* ---------- Hero with sign-on ---------- */}
+      <section className="home-hero full-bleed">
+        <div className="home-hero-inner">
+          <div className="home-hero-text">
+            <span className="hero-eyebrow">Personal Banking</span>
+            <h1>Banking that moves at your pace.</h1>
+            <p>
+              Open a savings or current account in minutes, move money instantly, and see every
+              transaction in one secure place.
+            </p>
+            <div className="hero-actions">
+              <Link to={user ? "/create" : "/signup"} className="btn btn-light btn-lg">
+                Open an account <ArrowRight size={18} />
               </Link>
-            ) : (
-              <>
-                <Link to="/signup" className="btn btn-primary btn-lg">
-                  Open an account <ArrowRight size={18} />
-                </Link>
-                <Link to="/login" className="btn btn-lg">Log in</Link>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="hero-visual" aria-hidden="true">
-          <div className="bank-card hero-card">
-            <div className="bank-card-top">
-              <span className="bank-card-type">SAVINGS</span>
-              <span className="bank-card-chip" />
+              <a href="#products" className="btn btn-ghost-light btn-lg">Explore accounts</a>
             </div>
-            <span className="bank-card-number">{"\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 0001"}</span>
-            <div className="bank-card-bottom">
-              <span>
-                <small>Balance</small>
-                <strong>$12,480.00</strong>
-              </span>
-              <small>Simple Bank</small>
-            </div>
+            <ul className="hero-trust">
+              <li><CircleCheck size={16} /> No monthly fees*</li>
+              <li><CircleCheck size={16} /> 24/7 online access</li>
+              <li><CircleCheck size={16} /> Secure sign-on</li>
+            </ul>
           </div>
-          <div className="bank-card bank-card-alt hero-card hero-card-back" />
+          <SignOnCard />
         </div>
       </section>
 
-      <section className="features">
-        {FEATURES.map((f) => {
-          const Icon = f.icon;
-          return (
-            <div key={f.title} className="feature">
-              <span className="feature-icon"><Icon size={22} /></span>
-              <h3>{f.title}</h3>
-              <p>{f.text}</p>
+      {/* ---------- Rates strip ---------- */}
+      <section id="rates" className="rates full-bleed">
+        <div className="rates-inner">
+          {RATES.map((r) => (
+            <div key={r.label} className="rate">
+              <strong>{r.value}<small>{r.unit}</small></strong>
+              <span>{r.label}</span>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </section>
+
+      {/* ---------- Products ---------- */}
+      <section id="products" className="home-section">
+        <div className="section-head">
+          <span className="section-eyebrow">Banking products</span>
+          <h2>Find the right account for you</h2>
+          <p>Simple, transparent accounts with no hidden fees.</p>
+        </div>
+        <div className="products">
+          {PRODUCTS.map((p) => {
+            const Icon = p.icon;
+            return (
+              <div key={p.title} className={`product ${p.available ? "" : "product-soon"}`}>
+                <div className="product-top">
+                  <span className="product-icon"><Icon size={24} /></span>
+                  {p.tag && <span className={`product-tag ${p.available ? "" : "tag-soon"}`}>{p.tag}</span>}
+                </div>
+                <h3>{p.title}</h3>
+                <p>{p.text}</p>
+                <ul>
+                  {p.points.map((pt) => <li key={pt}><CircleCheck size={15} /> {pt}</li>)}
+                </ul>
+                {p.available ? (
+                  <Link to={user ? "/create" : "/signup"} className="btn btn-primary btn-block">Open account</Link>
+                ) : (
+                  <button type="button" className="btn btn-block" disabled>Coming soon</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ---------- How it works ---------- */}
+      <section id="how" className="home-section how full-bleed">
+        <div className="how-inner">
+          <div className="section-head">
+            <span className="section-eyebrow">Getting started</span>
+            <h2>Start banking in three easy steps</h2>
+          </div>
+          <div className="steps">
+            {STEPS.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.title} className="step">
+                  <span className="step-number">{i + 1}</span>
+                  <span className="step-icon"><Icon size={24} /></span>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Security ---------- */}
+      <section id="security" className="security full-bleed">
+        <div className="security-inner">
+          <div>
+            <span className="section-eyebrow light">Security Center</span>
+            <h2>Your security is our priority</h2>
+            <p>We protect your accounts at every step, from the moment you sign on.</p>
+            <ul className="security-list">
+              <li><ShieldCheck size={20} /><span><strong>Secure sign-on</strong> Every session uses a signed token that expires automatically.</span></li>
+              <li><KeyRound size={20} /><span><strong>Protected passwords</strong> Passwords are hashed with BCrypt and never stored as plain text.</span></li>
+              <li><Lock size={20} /><span><strong>Private accounts</strong> Only you can see and use your accounts.</span></li>
+            </ul>
+          </div>
+          <div className="security-visual" aria-hidden="true">
+            <div className="shield"><ShieldCheck size={72} /></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Call to action ---------- */}
+      <section className="cta">
+        <div>
+          <h2>Ready to start banking with Simple Bank?</h2>
+          <p>Enroll online in minutes and open your first account today.</p>
+        </div>
+        <Link to={user ? homePath(user) : "/signup"} className="btn btn-primary btn-lg">
+          {user ? "Go to my accounts" : "Enroll now"} <ArrowRight size={18} />
+        </Link>
+      </section>
+
+      <p className="fine-print">
+        *Rates and fees shown are illustrative for this training project. Simple Bank is not a real bank.
+      </p>
     </div>
   );
 }

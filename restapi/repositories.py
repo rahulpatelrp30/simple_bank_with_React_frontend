@@ -25,12 +25,10 @@ class UserRepository:
     def __init__(self, db=None):
         self.db = db if db is not None else default_db
         self.col = self.db["users"]
-        # sparse=True: older users without a username do not break the index
         self.col.create_index("username", unique=True, sparse=True)
         self.col.create_index("email", unique=True)
 
     def _to_user(self, doc) -> User:
-        # Older documents only had "name"; split it so they still load
         old_name = doc.get("name", "").split(" ", 1)
         return User(
             user_id=doc["_id"],
@@ -65,9 +63,8 @@ class UserRepository:
     def find_customers(self, first_name: Optional[str] = None) -> list[User]:
         query = {"role": {"$ne": "ADMIN"}}
         if first_name:
-            # Case-insensitive "contains" search on first name
             query["first_name"] = {"$regex": re.escape(first_name), "$options": "i"}
-        return [self._to_user(d) for d in self.col.find(query).sort("_id", 1)]
+        return [self._to_user(doc) for doc in self.col.find(query).sort("_id", 1)]
 
     def delete(self, user_id: int) -> None:
         self.col.delete_one({"_id": user_id})
@@ -97,10 +94,10 @@ class AccountRepository:
         return self._to_account(doc) if doc else None
 
     def find_by_user(self, user_id: int) -> list[Account]:
-        return [self._to_account(d) for d in self.col.find({"user_id": user_id}).sort("_id", 1)]
+        return [self._to_account(doc) for doc in self.col.find({"user_id": user_id}).sort("_id", 1)]
 
     def find_all(self) -> list[Account]:
-        return [self._to_account(d) for d in self.col.find().sort("_id", 1)]
+        return [self._to_account(doc) for doc in self.col.find().sort("_id", 1)]
 
     def update_balance(self, account_id: int, new_balance: Decimal) -> None:
         self.col.update_one({"_id": account_id},
@@ -129,11 +126,12 @@ class TransactionRepository:
         return self._to_txn(doc)
 
     def find_by_account(self, account_id: int) -> list[Transaction]:
-        return [self._to_txn(d) for d in self.col.find({"account_id": account_id}).sort("_id", 1)]
+        docs = self.col.find({"account_id": account_id}).sort("_id", 1)
+        return [self._to_txn(d) for d in docs]
 
     def find_by_accounts(self, account_ids: list[int]) -> list[Transaction]:
         docs = self.col.find({"account_id": {"$in": account_ids}}).sort("_id", -1)
-        return [self._to_txn(d) for d in docs]
+        return [self._to_txn(doc) for doc in docs]
 
     def count(self) -> int:
         return self.col.count_documents({})

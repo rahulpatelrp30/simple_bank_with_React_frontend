@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -9,13 +9,14 @@ from pydantic import BaseModel, Field
 class SignupRequest(BaseModel):
     firstName: str = Field(min_length=1, max_length=50)
     lastName: str = Field(min_length=1, max_length=50)
-    username: str = Field(min_length=3, max_length=30, pattern=r"^[A-Za-z0-9_.]+$")
+    username: Optional[str] = Field(None, min_length=3, max_length=30, pattern=r"^[A-Za-z0-9_.]+$")  # optional: made from the email
     email: str = Field(min_length=3, max_length=100)
     password: str = Field(min_length=6, max_length=72)
 
 
 class LoginRequest(BaseModel):
-    username: str  # username or email
+    email: Optional[str] = None
+    username: Optional[str] = None  # still accepted, for Swagger and Postman
     password: str
 
 

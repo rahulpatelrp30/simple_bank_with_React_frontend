@@ -40,7 +40,7 @@ const post = (path, body) => request(path, { method: "POST", body: JSON.stringif
 
 // ---------- Auth ----------
 export const signupRequest = (form) => post("/auth/signup", form);
-export const loginRequest = (username, password) => post("/auth/login", { username, password });
+export const loginRequest = (email, password) => post("/auth/login", { email, password });
 export const getMe = () => request("/auth/me");
 export const logoutRequest = () => request("/auth/logout", { method: "POST" });
 

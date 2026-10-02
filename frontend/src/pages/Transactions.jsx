@@ -61,11 +61,11 @@ export default function Transactions() {
             </div>
             <div className="stat">
               <span className="stat-label">Money In</span>
-              <strong className="stat-value text-in">+{money(totalIn)}</strong>
+              <strong className="stat-value text-in">{totalIn > 0 ? "+" : ""}{money(totalIn)}</strong>
             </div>
             <div className="stat">
               <span className="stat-label">Money Out</span>
-              <strong className="stat-value text-out">-{money(totalOut)}</strong>
+              <strong className="stat-value text-out">{totalOut > 0 ? "-" : ""}{money(totalOut)}</strong>
             </div>
           </div>
 

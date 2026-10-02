@@ -1,4 +1,4 @@
-import { AtSign, Lock, Mail, User } from "lucide-react";
+import { Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
@@ -7,7 +7,7 @@ import AuthLayout from "../components/AuthLayout";
 import { Field, PasswordInput } from "../components/Field";
 import usePageTitle from "../components/usePageTitle";
 
-const EMPTY = { firstName: "", lastName: "", username: "", email: "", password: "" };
+const EMPTY = { firstName: "", lastName: "", email: "", password: "" };
 
 export default function Signup() {
   usePageTitle("Sign up");
@@ -26,10 +26,6 @@ export default function Signup() {
     e.preventDefault();
     setError("");
 
-    if (form.username.trim().toLowerCase() === "admin") {
-      setError('The username "admin" is reserved');
-      return;
-    }
     if (form.password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
@@ -64,10 +60,6 @@ export default function Signup() {
               value={form.lastName} onChange={update("lastName")} />
           </Field>
         </div>
-        <Field label="Username" icon={AtSign} hint="Letters, numbers, dots and underscores">
-          <input required minLength={3} autoComplete="username" placeholder="rahul"
-            value={form.username} onChange={update("username")} />
-        </Field>
         <Field label="Email" icon={Mail}>
           <input type="email" required autoComplete="email" placeholder="you@example.com"
             value={form.email} onChange={update("email")} />
@@ -86,7 +78,7 @@ export default function Signup() {
       </form>
 
       <p className="switch">
-        Already have an account? <Link to="/login">Log in</Link>
+        Already have an account? <Link to="/login">Sign on</Link>
       </p>
     </AuthLayout>
   );

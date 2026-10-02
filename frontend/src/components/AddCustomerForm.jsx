@@ -1,10 +1,10 @@
-import { AtSign, Lock, Mail, User } from "lucide-react";
+import { Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 
 import { postCustomer } from "../api";
 import { Field, PasswordInput } from "./Field";
 
-const EMPTY = { firstName: "", lastName: "", username: "", email: "", password: "" };
+const EMPTY = { firstName: "", lastName: "", email: "", password: "" };
 
 // Child -> parent: after a customer is created, onCreated(customer) tells the parent,
 // so the parent can refresh its list. onCancel closes the form.
@@ -18,10 +18,6 @@ export default function AddCustomerForm({ onCreated, onCancel }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    if (form.username.trim().toLowerCase() === "admin") {
-      setError('The username "admin" is reserved');
-      return;
-    }
     setSaving(true);
     try {
       const customer = await postCustomer(form);
@@ -44,9 +40,6 @@ export default function AddCustomerForm({ onCreated, onCancel }) {
         </Field>
         <Field label="Last name" icon={User}>
           <input required value={form.lastName} onChange={update("lastName")} placeholder="Shah" />
-        </Field>
-        <Field label="Username" icon={AtSign}>
-          <input required minLength={3} value={form.username} onChange={update("username")} placeholder="priya" />
         </Field>
         <Field label="Email" icon={Mail}>
           <input type="email" required value={form.email} onChange={update("email")} placeholder="priya@example.com" />

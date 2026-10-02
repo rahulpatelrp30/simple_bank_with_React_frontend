@@ -79,7 +79,7 @@ def signup(body: SignupRequest):
 
 @router.post("/auth/login", response_model=AuthResponse, tags=["Auth"])
 def login(body: LoginRequest):
-    token, user = auth_service.login(body.username, body.password)
+    token, user = auth_service.login(body.email or body.username or "", body.password)
     return auth_response(token, user)
 
 

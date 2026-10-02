@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -83,9 +84,21 @@ class AuthService:
         return user
 
     # ----- Register / login -----
+    def _username_from_email(self, email: str) -> str:
+        """Builds a username from the email, e.g. rahul.patel@x.com -> rahul.patel (or rahul.patel2)."""
+        base = re.sub(r"[^a-z0-9_.]", "", email.split("@")[0].lower())[:24] or "user"
+        if len(base) < 3:
+            base += "user"
+        candidate, n = base, 1
+        while candidate == ADMIN_USERNAME or self.user_repo.find_by_username(candidate):
+            n += 1
+            candidate = f"{base}{n}"
+        return candidate
+
     def register_customer(self, first_name, last_name, username, email, password):
-        username = username.strip().lower()
         email = email.strip().lower()
+        # Customers sign up with email only; a username is created for them automatically
+        username = username.strip().lower() if username else self._username_from_email(email)
         # Business rule: only the admin can have the username "admin"
         if username == ADMIN_USERNAME:
             raise BusinessRuleError('The username "admin" is reserved')
@@ -104,7 +117,7 @@ class AuthService:
         key = username_or_email.strip().lower()
         user = self.user_repo.find_by_username(key) or self.user_repo.find_by_email(key)
         if user is None or not verify_password(password, user.password_hash):
-            raise UnauthorizedError("Invalid username or password")
+            raise UnauthorizedError("Invalid email or password")
         return self.create_token(user), user
 
     def ensure_admin(self) -> None:
