@@ -5,3 +5,7 @@ workspace:
 localResources:
   collections:
     - ../Simple_Bank_API_JWT.postman_collection.json
+
+cloudResources:
+  collections:
+    ../postman/collections/Simple Bank API (JWT + roles): b8438301-d299-49c6-91ac-acaba05c4c5d

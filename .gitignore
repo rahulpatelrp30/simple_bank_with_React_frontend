@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 dist/
 .env
+restapi/.postman/
+restapi/postman/
+restapi/.postman/
+restapi/postman/
