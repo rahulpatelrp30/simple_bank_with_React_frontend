@@ -1,5 +1,5 @@
 // Data service: every call to the backend REST API lives in this file.
-const BASE_URL = "http://127.0.0.1:8000/api";
+const BASE_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "") + "/api";
 const TOKEN_KEY = "bank_token";
 
 // ---------- JWT token (kept in the browser so you stay logged in) ----------

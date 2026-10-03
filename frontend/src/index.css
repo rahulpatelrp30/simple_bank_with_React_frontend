@@ -906,3 +906,7 @@ tbody tr:nth-child(even) { background: #fafbfd; }
 
 /* Footer: centered legal text */
 .footer-legal { text-align: center; }
+
+/* Fixes: sign-on card text colour, round avatar */
+.signon-card p { color: var(--text-muted); }
+.avatar { flex-shrink: 0; }

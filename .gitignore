@@ -7,3 +7,7 @@ restapi/.postman/
 restapi/postman/
 restapi/.postman/
 restapi/postman/
+restapi/lambda_build/
+*.zip
+restapi/lambda_build/
+*.zip
