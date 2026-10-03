@@ -910,3 +910,33 @@ tbody tr:nth-child(even) { background: #fafbfd; }
 /* Fixes: sign-on card text colour, round avatar */
 .signon-card p { color: var(--text-muted); }
 .avatar { flex-shrink: 0; }
+
+/* ============================================================
+   POLISH LAYER: centered layout and smooth interactions
+   ============================================================ */
+html { scroll-behavior: smooth; scroll-padding-top: 130px; }
+::selection { background: rgba(11, 92, 171, 0.18); }
+a, button, input, select { transition: color 0.18s, background-color 0.18s, border-color 0.18s, box-shadow 0.18s, transform 0.18s; }
+:focus-visible { outline: 3px solid rgba(11, 92, 171, 0.35); outline-offset: 2px; }
+input:focus-visible, select:focus-visible { outline: none; }
+.main-nav { justify-content: center; }
+.container { display: flex; flex-direction: column; }
+.page { width: 100%; margin: auto; }
+.page-wide, .home { width: 100%; }
+.auth { width: 100%; margin: auto; }
+.page .crumbs { justify-content: center; }
+.page > .card { padding: 40px; }
+.page > .card > h1, .page > .card > h1 + .muted, .page > .card > h1 + p { text-align: center; }
+.page .chips { justify-content: center; }
+.page .forbidden .btn { margin: 0 auto; }
+.page, .page-wide, .auth, .home { animation: fadeUp 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.page-head { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.panel { border-radius: 16px; transition: box-shadow 0.25s; }
+.panel:hover { box-shadow: 0 10px 28px rgba(10, 42, 79, 0.08); }
+tbody tr:nth-child(even) { background: #fafbfd; }
+.loader { margin: 120px auto; }
+.footer-legal { text-align: center; }
+
+/* Fixes: sign-on card text colour, round avatar */
+.signon-card p { color: var(--text-muted); }
+.avatar { flex-shrink: 0; }
